@@ -1,9 +1,17 @@
-from .pipeline import CsvPromptPipeline, PipelineResult, build_pipeline, run_cli
-from .pptx_chat import PPTXChatRequest, execute_chat_request, parse_chat_request
+"""Backward-compatible exports for PPTX agent core logic.
+
+Prefer importing from :mod:`tokiswork_dspy.pptx_core` for new code.
+"""
+
 from .pptx_core import (
+    AnalyzeTemplate,
+    ExtractInformation,
+    GenerateUserPrompt,
     PPTXAgentResult,
     PPTXReActAgent,
     PPTXTemplateParser,
+    ProcessUserResponse,
+    TemplateField,
     analyze_template,
     create_simple_template,
     create_template_from_spec,
@@ -11,18 +19,16 @@ from .pptx_core import (
 )
 
 __all__ = [
-    "CsvPromptPipeline",
-    "PipelineResult",
-    "build_pipeline",
-    "run_cli",
+    "AnalyzeTemplate",
+    "ExtractInformation",
+    "GenerateUserPrompt",
     "PPTXAgentResult",
     "PPTXReActAgent",
     "PPTXTemplateParser",
-    "PPTXChatRequest",
+    "ProcessUserResponse",
+    "TemplateField",
     "analyze_template",
     "create_simple_template",
     "create_template_from_spec",
-    "execute_chat_request",
-    "parse_chat_request",
     "run_pptx_agent",
 ]

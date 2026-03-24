@@ -12,11 +12,14 @@ dependencies = [
     "dspy>=2.6.0",
     "gradio>=5.23.0,<6",
     "polars>=1.30.0",
+    "python-pptx>=0.6.23",
 ]
 
 [project.scripts]
 tokiswork-dspy = "tokiswork_dspy.pipeline:run_cli"
 tokiswork-gradio = "tokiswork_dspy.gradio_app:launch_cli"
+tokiswork-pptx = "tokiswork_dspy.pptx_cli:run_cli"
+tokiswork-pptx-chat = "tokiswork_dspy.pptx_chat:run_chat_cli"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/tokiswork_dspy"]

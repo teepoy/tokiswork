@@ -1,16 +1,9 @@
 # tokiswork
 
-一个最小可运行的 DSPy CSV 处理流程示例：
+一个最小可运行的 DSPy 工作台，目前包含两条能力线：
 
-1. 读取 CSV 表头与 prompt。
-2. 通过 DSPy `Predict` 生成一段 `polars` 数据处理函数代码。
-3. 在受限执行环境里加载并运行这段代码。
-4. 输出结果、代码片段与元信息；结果较大时自动写入 `result.csv`。
-
-现在仓库同时提供：
-
-- CLI 入口：适合脚本/终端使用
-- Gradio Demo：适合手动输入 **share disk 路径** 做交互式验证
+1. **CSV prompt pipeline**：读取 CSV 和 prompt，生成并执行 `polars` 数据处理代码。
+2. **PPTX agent**：分析 / 创建 / 填充 PPTX 模板，支持传统 CLI 和新的纯 chat 入口。
 
 ## 安装
 
@@ -18,7 +11,11 @@
 uv sync
 ```
 
-## CLI 运行示例
+---
+
+## CSV Pipeline
+
+### CLI 运行示例
 
 ```bash
 uv run tokiswork-dspy \
@@ -34,59 +31,131 @@ uv run python main.py \
   --prompt-file examples/prompt.txt
 ```
 
-## 启动 Gradio Demo
-
-推荐：
+### 启动 Gradio Demo
 
 ```bash
 uv run tokiswork-gradio --host 0.0.0.0 --port 7860
 ```
 
-或直接运行模块：
+或：
 
 ```bash
 uv run python -m tokiswork_dspy.gradio_app --host 0.0.0.0 --port 7860
 ```
 
-启动后，在界面中：
+---
 
-1. 在 **CSV 路径（share disk）** 输入框填写 CSV 文件路径，例如 `/share/disk/project/input.csv`
-2. 在 **处理 prompt** 输入框填写你的需求，例如“按 city 汇总 sales，并按总销售额降序排序”
-3. 如需自定义产物位置，可修改 **输出目录**（默认是 `runs`）
-4. 点击 **运行 pipeline**
+## PPTX Agent
 
-> 注意：这里不提供单独的文件上传控件，默认工作流就是直接输入 share disk 上的 CSV 路径。
+PPTX 相关实现现在分为 4 层：
 
-## Gradio 输出内容
+- `src/tokiswork_dspy/pptx_core.py`：core logic
+- `src/tokiswork_dspy/pptx_chat.py`：chat parsing / request normalization
+- `src/tokiswork_dspy/pptx_cli.py`：CLI entry
+- `examples/pptx_examples.py` + `PPTX_*.md`：docs/examples
 
-每次运行会复用现有 pipeline，并在 `runs/<timestamp>/`（或你指定的输出目录）下生成：
+兼容层保留在：
 
-- `prompt.txt`：本次 prompt
-- `*.py`：DSPy 生成的数据处理函数
-- `result_preview.json`：结果预览
-- `result.csv`：结果较大时生成的完整结果
-- `metadata.json`：源文件、代码路径、执行器信息、结果位置等元信息
+- `src/tokiswork_dspy/pptx_agent.py`
 
-在 Gradio 页面中还能直接看到：
+### 1) 传统 CLI 用法
 
-- 本次运行的输出目录
-- `metadata.json` 内容
-- 生成的 transform 代码
-- `result_preview.json` 内容
+#### 分析模板
 
-如果本次结果较小，可能不会生成 `result.csv`，这时直接查看 `result_preview.json` 即可。
+```bash
+uv run tokiswork-pptx analyze template.pptx
+```
+
+#### 创建模板
+
+```bash
+uv run tokiswork-pptx create demo_template.pptx \
+  --fields '{"company":"Company","date":"Date","summary":"Summary"}'
+```
+
+#### 填充模板
+
+```bash
+uv run tokiswork-pptx fill demo_template.pptx \
+  --input "为 Acme Corp 生成 Q1 2026 汇报，日期 2026-03-24，摘要是销售增长 15%" \
+  --output-dir pptx_runs
+```
+
+如需显式输出文件名：
+
+```bash
+uv run tokiswork-pptx fill demo_template.pptx \
+  --input "为 Acme Corp 生成季度汇报" \
+  --output-path outputs/acme_q1_report.pptx
+```
+
+### 2) 纯 chat 入口
+
+新增运行方式：
+
+```bash
+uv run tokiswork-pptx-chat "请分析 template.pptx 这个模板里有哪些字段"
+```
+
+或通过统一 CLI 的 `chat` 子命令：
+
+```bash
+uv run tokiswork-pptx chat "用 template.pptx 生成一份报告，保存到 outputs/final.pptx，内容是：Acme Corp 的 Q1 2026 经营回顾，摘要写销售增长 15%"
+```
+
+### chat 输入示例
+
+#### 示例 1：分析模板
+
+```text
+请分析 ./examples/pptx_templates/basic_report.pptx 里有哪些可填字段
+```
+
+#### 示例 2：自然语言填充模板
+
+```text
+用 ./examples/pptx_templates/basic_report.pptx 生成一份 PPT，输出到 ./examples/pptx_output/acme_q1.pptx。
+内容是：Acme Corporation 的 Q1 2026 经营分析，作者 Jane Smith，日期 2026-03-24，摘要写 Sales increased 15% YoY。
+```
+
+#### 示例 3：自然语言创建模板
+
+```text
+创建模板到 ./examples/pptx_templates/new_template.pptx，fields: company_name, report_title, date, executive_summary
+```
+
+### Python API
+
+#### 结构化调用
+
+```python
+from tokiswork_dspy.pptx_core import run_pptx_agent
+
+result = run_pptx_agent(
+    template_path="template.pptx",
+    user_input="为 Acme Corp 生成季度报告",
+    output_dir="pptx_runs",
+)
+```
+
+#### chat 调用
+
+```python
+from tokiswork_dspy.pptx_chat import execute_chat_request
+
+result = execute_chat_request(
+    "用 template.pptx 生成一份报告，保存到 outputs/out.pptx，内容是 Acme Corp Q1 2026 总结"
+)
+```
+
+更多说明见：
+
+- `PPTX_AGENT.md`
+- `PPTX_QUICKSTART.md`
+- `PPTX_USAGE_INDEX.md`
+
+---
 
 ## 默认模式
 
-仓库默认使用一个本地 `RuleBasedCodegenLM` 来模拟 DSPy 的代码生成流程，方便在没有外部模型密钥时本地验证。
-
-若你已经配置了真实模型，也可以使用 CLI：
-
-```bash
-DSPY_MODEL=openai/gpt-4o-mini uv run tokiswork-dspy \
-  --csv examples/input.csv \
-  --prompt-file examples/prompt.txt \
-  --real-lm
-```
-
-或在 Gradio 页面勾选“使用真实 DSPy 模型（需要预先设置 DSPY_MODEL）”。
+仓库默认使用一个本地规则式流程来方便本地验证；如果你已经配置了真实 DSPy 模型，也可以自行接入并通过现有入口复用。
