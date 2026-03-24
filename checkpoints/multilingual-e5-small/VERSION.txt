@@ -1,0 +1,5 @@
+repo_id: intfloat/multilingual-e5-small
+revision: c007d7ef6fd86656326059b28395a7a03a7c5846
+recommended_loader: sentence-transformers
+alternative_loader: transformers
+main_weight_file: model.safetensors

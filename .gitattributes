@@ -1,0 +1,4 @@
+checkpoints/multilingual-e5-small/*.safetensors filter=lfs diff=lfs merge=lfs -text
+checkpoints/multilingual-e5-small/*.json filter=lfs diff=lfs merge=lfs -text
+checkpoints/multilingual-e5-small/*.model filter=lfs diff=lfs merge=lfs -text
+checkpoints/multilingual-e5-small/1_Pooling/*.json filter=lfs diff=lfs merge=lfs -text
