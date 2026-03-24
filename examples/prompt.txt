@@ -1,0 +1,1 @@
+Read the CSV and compute total sales by city. Return a grouped result sorted by city.

@@ -1,6 +1,5 @@
-def main():
-    print("Hello from tokiswork!")
+from tokiswork_dspy.pipeline import run_cli
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(run_cli())

@@ -1,7 +1,20 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
 [project]
 name = "tokiswork"
 version = "0.1.0"
-description = "Add your description here"
+description = "Minimal DSPy CSV prompt pipeline with sandboxed Polars execution"
 readme = "README.md"
-requires-python = ">=3.13"
-dependencies = []
+requires-python = ">=3.12"
+dependencies = [
+    "dspy>=2.6.0",
+    "polars>=1.30.0",
+]
+
+[project.scripts]
+tokiswork-dspy = "tokiswork_dspy.pipeline:run_cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tokiswork_dspy"]
