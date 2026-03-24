@@ -50,6 +50,14 @@ class ExamplePPTXLM(dspy.BaseLM):
             "executive_summary",
         ]
         missing = [f for f in expected if f not in extracted]
+        operation = "create" if ("创建模板" in user_text or "create template" in lower) else "fill"
+        template_match = next((token for token in user_text.replace('。', ' ').split() if token.endswith('.pptx')), "")
+        output_match = ""
+        if "保存到" in user_text:
+            output_match = user_text.split("保存到", 1)[1].strip().split()[0].rstrip("。.,，")
+        elif operation == "create":
+            output_match = template_match
+            template_match = ""
         content = f"""[[ ## extracted_data ## ]]
 {json.dumps(extracted)}
 
@@ -73,6 +81,27 @@ Please provide: {', '.join(missing)}
 
 [[ ## completeness ## ]]
 {'Complete' if not missing else 'Partial'}
+
+[[ ## operation ## ]]
+{operation}
+
+[[ ## template_path ## ]]
+{template_match}
+
+[[ ## output_path ## ]]
+{output_match}
+
+[[ ## output_dir ## ]]
+pptx_runs
+
+[[ ## fields_json ## ]]
+{{}}
+
+[[ ## content ## ]]
+{user_text}
+
+[[ ## confidence ## ]]
+medium
 
 [[ ## completed ## ]]
 """
@@ -136,7 +165,9 @@ def example_chat_parse(template_path: Path) -> None:
         "内容是：Acme Corporation 的 Q1 2026 经营分析，作者 Jane Smith，日期 2026-03-24，"
         "摘要写 Sales increased 15% YoY。"
     )
-    print(json.dumps(parse_chat_request(chat).__dict__, ensure_ascii=False, indent=2))
+    parsed = parse_chat_request(chat)
+    print(json.dumps(parsed.__dict__, ensure_ascii=False, indent=2))
+    print(f"parser_mode = {parsed.parser_mode}")
 
 
 def example_chat_execute(template_path: Path) -> None:

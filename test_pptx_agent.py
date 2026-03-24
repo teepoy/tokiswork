@@ -42,6 +42,11 @@ class SimplePPTXLM(dspy.BaseLM):
 
         expected_fields = ["company", "quarter", "date"]
         missing = [f for f in expected_fields if f not in extracted]
+        operation = "analyze" if ("analyze" in lower_text or "分析" in lower_text) else "fill"
+        template_match = next((token for token in user_text.replace('。', ' ').split() if token.endswith('.pptx')), "")
+        output_match = ""
+        if "保存到" in user_text:
+            output_match = user_text.split("保存到", 1)[1].strip().split()[0].rstrip("。.,，")
         content = f"""[[ ## extracted_data ## ]]
 {json.dumps(extracted)}
 
@@ -65,6 +70,27 @@ Please provide: {', '.join(missing)}
 
 [[ ## completeness ## ]]
 {'Complete' if not missing else 'Partial'}
+
+[[ ## operation ## ]]
+{operation}
+
+[[ ## template_path ## ]]
+{template_match}
+
+[[ ## output_path ## ]]
+{output_match}
+
+[[ ## output_dir ## ]]
+pptx_runs
+
+[[ ## fields_json ## ]]
+{{}}
+
+[[ ## content ## ]]
+{user_text}
+
+[[ ## confidence ## ]]
+medium
 
 [[ ## completed ## ]]
 """
@@ -112,6 +138,7 @@ def main() -> int:
         parsed = parse_chat_request(chat_text)
         assert parsed.operation == "fill"
         assert parsed.template_path and parsed.template_path.endswith("demo_template.pptx")
+        assert parsed.parser_mode in {"dspy-configured", "dspy-rulebased", "regex-fallback"}
 
         chat_result = execute_chat_request(chat_text)
         assert chat_result["success"] is True

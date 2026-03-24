@@ -50,7 +50,7 @@ uv run python -m tokiswork_dspy.gradio_app --host 0.0.0.0 --port 7860
 PPTX 相关实现现在分为 4 层：
 
 - `src/tokiswork_dspy/pptx_core.py`：core logic
-- `src/tokiswork_dspy/pptx_chat.py`：chat parsing / request normalization
+- `src/tokiswork_dspy/pptx_chat.py`：DSPy-driven chat planning / request normalization（失败时退回确定性 fallback）
 - `src/tokiswork_dspy/pptx_cli.py`：CLI entry
 - `examples/pptx_examples.py` + `PPTX_*.md`：docs/examples
 
@@ -90,6 +90,8 @@ uv run tokiswork-pptx fill demo_template.pptx \
 ```
 
 ### 2) 纯 chat 入口
+
+chat 入口现在默认走 **DSPy + model-driven planning**：先让 `pptx_chat.py` 做意图识别（`analyze/create/fill`）、路径/字段/内容抽取，再复用现有 `pptx_core.py` 的能力执行。若当前没有可用模型，或模型输出不完整，则自动回退到仓库内置的 deterministic planner。
 
 新增运行方式：
 
@@ -158,4 +160,8 @@ result = execute_chat_request(
 
 ## 默认模式
 
-仓库默认使用一个本地规则式流程来方便本地验证；如果你已经配置了真实 DSPy 模型，也可以自行接入并通过现有入口复用。
+CSV pipeline 仍保留本地可验证的规则式 LM；PPTX chat 入口则升级为 **DSPy planner 优先、deterministic fallback 保底**。
+
+- 若已通过 `dspy.configure(lm=...)` 配置真实模型：chat 解析优先使用该模型。
+- 若未配置模型，或模型不按预期返回规划字段：自动切回内置 `RuleBasedPPTXChatLM` / heuristic fallback。
+- 底层 PPTX 分析、创建、填充逻辑仍复用 `pptx_core.py`，没有重复实现 PPTX 操作。

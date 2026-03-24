@@ -10,7 +10,9 @@ PPTX 相关实现已整理为 4 层：
    - `run_pptx_agent()`
    - `analyze_template()`
    - `create_template_from_spec()`
-2. **Chat parsing / request normalization** — `src/tokiswork_dspy/pptx_chat.py`
+2. **Chat planning / request normalization** — `src/tokiswork_dspy/pptx_chat.py`
+   - `PlanPPTXChatRequest`（DSPy signature）
+   - `RuleBasedPPTXChatLM`（本地可运行的 deterministic planner）
    - `parse_chat_request()`
    - `execute_chat_request()`
    - `PPTXChatRequest`
@@ -43,6 +45,13 @@ uv run tokiswork-pptx fill template.pptx --input "为 Acme Corp 生成季度汇�
 - 输出路径
 - 目标操作（analyze / create / fill）
 - 模板字段或业务描述
+- `content / input / output / template / fields` 等关键参数
+
+解析流程已改为：
+1. 优先调用 DSPy planner 做意图识别与参数抽取
+2. 若当前无外部模型，则自动使用仓库内置的 `RuleBasedPPTXChatLM`
+3. 若 planner 输出异常，再退回纯 heuristic fallback
+4. 最终执行仍复用 `pptx_core.py` 中的 `analyze_template()` / `create_template_from_spec()` / `run_pptx_agent()`
 
 运行方式：
 
