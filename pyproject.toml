@@ -13,6 +13,9 @@ dependencies = [
     "gradio>=5.23.0,<6",
     "polars>=1.30.0",
     "python-pptx>=0.6.23",
+    "httpx>=0.25.0",
+    "uvicorn>=0.27.0",
+    "python-dotenv>=1.0.0",
 ]
 
 [project.scripts]
@@ -20,6 +23,7 @@ tokiswork-dspy = "tokiswork_dspy.pipeline:run_cli"
 tokiswork-gradio = "tokiswork_dspy.gradio_app:launch_cli"
 tokiswork-pptx = "tokiswork_dspy.pptx_cli:run_cli"
 tokiswork-pptx-chat = "tokiswork_dspy.pptx_chat:run_chat_cli"
+tokiswork-gradio-oauth = "tokiswork_oauth.cli:launch_oauth_cli"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/tokiswork_dspy"]
+packages = ["src/tokiswork_dspy", "src/tokiswork_oauth", "src/tokiswork_triplets"]

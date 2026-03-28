@@ -17,7 +17,14 @@ def _load_gradio():
     except ValueError as exc:
         if "Unknown scheme for proxy URL" not in str(exc):
             raise
-        for key in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy", "all_proxy"):
+        for key in (
+            "HTTP_PROXY",
+            "HTTPS_PROXY",
+            "ALL_PROXY",
+            "http_proxy",
+            "https_proxy",
+            "all_proxy",
+        ):
             value = os.environ.get(key, "")
             if value.startswith("socks://"):
                 os.environ.pop(key, None)
@@ -36,10 +43,14 @@ def run_gradio_pipeline(
     prompt: str,
     output_dir: str = "runs",
     use_real_lm: bool = False,
+    request: gr.Request | None = None,
 ) -> tuple[str, str, str, str]:
     csv_path = (csv_path or "").strip()
     prompt = (prompt or "").strip()
     output_dir = (output_dir or "runs").strip()
+
+    # Extract username from request if available (for logging/tracking)
+    username = request.username if request else "anonymous"
 
     if not csv_path:
         raise gr.Error("请输入 share disk 上的 CSV 路径。")
