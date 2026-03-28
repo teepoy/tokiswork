@@ -24,6 +24,7 @@ tokiswork-gradio = "tokiswork_dspy.gradio_app:launch_cli"
 tokiswork-pptx = "tokiswork_dspy.pptx_cli:run_cli"
 tokiswork-pptx-chat = "tokiswork_dspy.pptx_chat:run_chat_cli"
 tokiswork-gradio-oauth = "tokiswork_oauth.cli:launch_oauth_cli"
+tokiswork-supcon-demo = "tokiswork_supcon.demo:run_demo"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/tokiswork_dspy", "src/tokiswork_oauth", "src/tokiswork_triplets"]
+packages = ["src/tokiswork_dspy", "src/tokiswork_oauth", "src/tokiswork_triplets", "src/tokiswork_supcon"]

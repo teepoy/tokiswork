@@ -158,6 +158,33 @@ result = execute_chat_request(
 
 ---
 
+## Supervised Contrastive Learning Demo
+
+新增了一个小型的 SupCon 示例包：
+
+- `src/tokiswork_supcon/`
+
+运行方式：
+
+```bash
+uv run tokiswork-supcon-demo
+```
+
+或直接运行模块：
+
+```bash
+uv run python -m tokiswork_supcon.demo
+```
+
+该示例会：
+
+1. 构造二维 toy 数据（两类）。
+2. 为每个样本生成两种轻微增强视图。
+3. 使用 Supervised Contrastive Loss 训练一个极简 2D 线性编码器。
+4. 输出训练前后 loss 和简单的类中心分类准确率。
+
+---
+
 ## 默认模式
 
 CSV pipeline 仍保留本地可验证的规则式 LM；PPTX chat 入口则升级为 **DSPy planner 优先、deterministic fallback 保底**。
